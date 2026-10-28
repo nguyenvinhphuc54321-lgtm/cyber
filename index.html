@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1e3a5f">
+<title>Sổ học tập</title>
+<style>
+  :root {
+    --bg:#f3f4f7; --card:#ffffff; --text:#1c1f26; --muted:#6b7280; --line:#dde0e6;
+    --accent:#2f4fb5; --accent-soft:#e8edfb; --time:#c58a00; --green:#16a870; --red:#e04545;
+    --orange:#f08c00; --track:#e5e7eb; --head:#eef0f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#101318; --card:#1a1e26; --text:#eceef2; --muted:#98a0ae; --line:#2b313c;
+      --accent:#8fa8ff; --accent-soft:#222b44; --time:#f2b632; --green:#34d399; --red:#f87171;
+      --orange:#fbbf24; --track:#2f3541; --head:#212632;
+    }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  header { padding:18px 16px 0; max-width:1100px; margin:0 auto; }
+  h1 { margin:0; font-size:1.35rem; }
+  .sub { color:var(--muted); font-size:.85rem; margin-top:2px; }
+  nav { display:flex; gap:6px; overflow-x:auto; padding:12px 16px; max-width:1100px; margin:0 auto; }
+  nav button { flex:none; border:1px solid var(--line); background:var(--card); color:var(--text); padding:8px 14px; border-radius:999px; font:inherit; cursor:pointer; }
+  nav button.on { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
+  @media (prefers-color-scheme: dark) { nav button.on { color:#0c1020; } }
+  main { max-width:1100px; margin:0 auto; padding:0 16px 56px; }
+  button { font:inherit; }
+  .primary { background:var(--accent); color:#fff; border:0; padding:8px 14px; border-radius:8px; cursor:pointer; font-weight:600; }
+  @media (prefers-color-scheme: dark) { .primary { color:#0c1020; } }
+  .ghost { background:var(--card); color:var(--text); border:1px solid var(--line); padding:8px 12px; border-radius:8px; cursor:pointer; }
+  .danger { background:transparent; color:var(--red); border:1px solid var(--red); padding:8px 12px; border-radius:8px; cursor:pointer; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:4px 0 12px; }
+  .bar-title { flex:1; min-width:160px; text-align:center; font-weight:600; }
+  .next { background:var(--accent-soft); border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:.9rem; }
+  .week { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:10px; }
+  .day { background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .day.today { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+  .day-h { display:flex; justify-content:space-between; align-items:center; background:var(--head); padding:8px 10px; font-weight:700; }
+  .day-h button { border:0; background:transparent; color:var(--accent); font-size:1.2rem; cursor:pointer; line-height:1; }
+  .day-b { padding:8px; display:flex; flex-direction:column; gap:8px; min-height:48px; }
+  .empty { color:var(--muted); text-align:center; }
+  .ev { text-align:left; width:100%; border:1px solid var(--line); background:transparent; color:inherit; border-radius:8px; padding:8px 10px; cursor:pointer; }
+  .ev:hover { background:var(--accent-soft); }
+  .ev b { color:var(--accent); display:block; }
+  .ev .t { color:var(--time); font-weight:600; }
+  .ev .m { color:var(--muted); font-size:.85rem; display:block; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:12px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; }
+  .course { display:flex; gap:14px; }
+  .course .info { flex:1; min-width:0; }
+  .course h3 { margin:0; font-size:1rem; }
+  .course .meta { color:var(--muted); font-size:.85rem; }
+  .pill { display:inline-block; border:1px solid currentColor; border-radius:999px; padding:1px 10px; font-size:.8rem; font-weight:600; margin:6px 6px 0 0; }
+  .pill.g { color:var(--green); } .pill.r { color:var(--red); } .pill.o { color:var(--orange); } .pill.m { color:var(--muted); }
+  .legend { font-size:.78rem; color:var(--muted); margin-top:8px; }
+  .legend i { display:inline-block; width:9px; height:9px; border-radius:50%; margin:0 4px 0 8px; }
+  .legend i:first-child { margin-left:0; }
+  .status { margin-top:8px; font-size:.88rem; }
+  .status.bad { color:var(--red); font-weight:600; }
+  .status.warn { color:var(--orange); font-weight:600; }
+  .acts { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .acts button { padding:6px 10px; font-size:.85rem; }
+  .row { display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+  .big { font-size:1.6rem; font-weight:800; }
+  label { display:block; font-size:.82rem; color:var(--muted); margin:10px 0 3px; }
+  input, select, textarea { width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--text); font:inherit; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  dialog { border:1px solid var(--line); border-radius:14px; background:var(--card); color:var(--text); width:min(460px,calc(100vw - 24px)); padding:16px; }
+  dialog::backdrop { background:rgba(0,0,0,.5); }
+  dialog h2 { margin:0 0 4px; font-size:1.1rem; }
+  .actions { display:flex; gap:8px; margin-top:16px; }
+  .sp { flex:1; }
+  .mail { display:block; text-decoration:none; color:inherit; }
+  .mail b { display:block; }
+  .mail .m { color:var(--muted); font-size:.82rem; }
+  .mail.hot { border-left:4px solid var(--orange); }
+  .note { color:var(--muted); font-size:.85rem; }
+  h2.sec { font-size:1.05rem; margin:22px 0 6px; }
+  #toast { position:fixed; left:50%; bottom:20px; transform:translateX(-50%); background:#222; color:#fff; padding:10px 16px; border-radius:10px; opacity:0; pointer-events:none; transition:opacity .2s; max-width:90vw; }
+  #toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Sổ học tập</h1>
+  <div class="sub" id="today"></div>
+</header>
+<nav id="tabs">
+  <button data-tab="schedule">Lịch học</button>
+  <button data-tab="attendance">Chuyên cần</button>
+  <button data-tab="books">Mượn sách</button>
+  <button data-tab="mail">Email</button>
+  <button data-tab="settings">Cài đặt</button>
+</nav>
+<main id="view"></main>
+
+<dialog id="dlg">
+  <form id="dlgForm">
+    <h2 id="dlgTitle"></h2>
+    <div id="dlgBody"></div>
+    <div class="actions">
+      <button type="button" class="danger" id="dlgDel" hidden>Xóa</button>
+      <span class="sp"></span>
+      <button type="button" class="ghost" id="dlgCancel">Hủy</button>
+      <button type="submit" class="primary">Lưu</button>
+    </div>
+  </form>
+</dialog>
+<div id="toast"></div>
+
+<script>
+/* ============ Tiện ích ============ */
+const KEY = 'so_hoc_tap_v1';
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Math.random().toString(36).slice(2, 10);
+const pad = n => String(n).padStart(2, '0');
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parseD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const mondayOf = d => { const x = new Date(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); x.setHours(0, 0, 0, 0); return x; };
+const DOW = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+const dayLabel = d => `${DOW[d.getDay()]} (${pad(d.getDate())}/${pad(d.getMonth() + 1)})`;
+const fmtDate = s => { if (!s) return '-'; const [y, m, d] = s.split('-'); return `${d}/${m}/${y}`; };
+const fmtTime = t => t.replace(':', 'h');
+
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ============ Dữ liệu ============ */
+function seed() {
+  const events = [];
+  const add = (course, className, date, start, end, room, teacher) =>
+    events.push({ id: uid(), course, className, date, start, end, room, teacher, mode: 'Offline' });
+
+  add('ORT101', 'AI_course1_14', '2026-10-29', '07:00', '09:15', 'Alpha Hall 5F', '-');
+  add('VOV114', 'VOV114_05_H1', '2026-10-30', '07:00', '08:30', 'Vovinam 2', 'thuannt12');
+  add('VOV114', 'VOV114_05_H1', '2026-10-30', '08:45', '10:15', 'Vovinam 2', 'thuannt12');
+  add('VOV114', 'VOV114_05_H1', '2026-11-01', '07:00', '08:30', 'Vovinam 1', '-');
+
+  for (let d = parseD('2026-11-02'); iso(d) <= '2026-11-29'; d = addDays(d, 1)) {
+    const w = d.getDay(), key = iso(d);
+    if (w >= 1 && w <= 5) add('LUK1', 'HU_12_H2', key, '10:00', '12:30', '501', '-');
+    if (w === 4 || w === 6) {
+      add('DTB103', 'DTB103_05_H2', key, '14:15', '15:45', 'Gamma 416', 'quynhtnp');
+      add('DTB103', 'DTB103_05_H2', key, '16:00', '17:30', 'Gamma 416', 'quynhtnp');
+    }
+  }
+
+  const courses = [
+    { id: uid(), code: 'ORT101', name: 'Orientation', className: 'ORT101_GROUP1', start: '2026-09-07', end: '2026-09-08', total: 3, attended: 3, absent: 0 },
+    { id: uid(), code: 'ORT101', name: 'Orientation', className: 'AI_course1_14', start: '2026-10-12', end: '2026-10-29', total: 8, attended: 8, absent: 0 },
+    { id: uid(), code: 'VOV114', name: 'Vovinam 1/3', className: 'VOV114_05_H1', start: '2026-09-16', end: '2026-10-30', total: 26, attended: 24, absent: 2 },
+    { id: uid(), code: 'LUK1', name: '', className: 'HU_12_H2', start: '2026-11-02', end: '', total: 0, attended: 0, absent: 0 },
+    { id: uid(), code: 'DTB103', name: '', className: 'DTB103_05_H2', start: '2026-11-05', end: '', total: 0, attended: 0, absent: 0 }
+  ];
+
+  return {
+    events, courses, books: [], notified: {}, mailCache: [],
+    settings: { topic: '', scriptUrl: '', token: '', maxAbsent: 20, loanDays: 30, remindBookDays: 3 }
+  };
+}
+
+let S;
+function load() {
+  try { const raw = localStorage.getItem(KEY); if (raw) { S = JSON.parse(raw); } } catch (e) {}
+  if (!S) S = seed();
+  S.settings = Object.assign({ topic: '', scriptUrl: '', token: '', maxAbsent: 20, loanDays: 30, remindBookDays: 3 }, S.settings || {});
+  S.notified = S.notified || {}; S.mailCache = S.mailCache || [];
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('Không lưu được dữ liệu trên trình duyệt này.'); } }
+
+/* ============ Thông báo ntfy ============ */
+async function ntfy(title, message, priority = 3) {
+  const topic = S.settings.topic; if (!topic) return false;
+  try {
+    const r = await fetch('https://ntfy.sh/', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, title, message, priority, tags: ['books'] })
+    });
+    return r.ok;
+  } catch (e) { return false; }
+}
+
+/* ============ Tính toán ============ */
+const maxAbs = c => Math.floor(c.total * S.settings.maxAbsent / 100 + 1e-9);
+const pct = (a, b) => b > 0 ? (a / b * 100) : 0;
+const num = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; };
+const dueDate = b => addDays(parseD(b.borrowDate), b.days);
+const daysLeft = b => { const t = new Date(); t.setHours(0, 0, 0, 0); return Math.round((dueDate(b) - t) / 86400000); };
+
+/* ============ Giao diện ============ */
+let tab = 'schedule';
+let weekStart = mondayOf(new Date());
+
+function render() {
+  $('#today').textContent = 'Hôm nay: ' + dayLabel(new Date()) + '/' + new Date().getFullYear();
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  ({ schedule: rSchedule, attendance: rAttendance, books: rBooks, mail: rMail, settings: rSettings })[tab]();
+}
+
+/* ---- Lịch học ---- */
+function rSchedule() {
+  const days = [...Array(7)].map((_, i) => addDays(weekStart, i));
+  const today = iso(new Date());
+  const now = new Date();
+  const upcoming = S.events
+    .map(e => ({ e, at: new Date(parseD(e.date).getTime() + (+e.start.slice(0, 2) * 60 + +e.start.slice(3)) * 60000) }))
+    .filter(x => x.at > now).sort((a, b) => a.at - b.at)[0];
+
+  let h = '';
+  if (upcoming) {
+    const e = upcoming.e;
+    h += `<div class="next"><b>Buổi tiếp theo:</b> ${esc(e.course)} - ${esc(e.className)}, ${dayLabel(parseD(e.date))} lúc ${fmtTime(e.start)}-${fmtTime(e.end)}, phòng ${esc(e.room || '-')}</div>`;
+  }
+  h += `<div class="bar">
+    <button class="ghost" data-act="wk-prev">‹ Tuần trước</button>
+    <div class="bar-title">${pad(days[0].getDate())}/${pad(days[0].getMonth() + 1)} – ${pad(days[6].getDate())}/${pad(days[6].getMonth() + 1)}/${days[6].getFullYear()}</div>
+    <button class="ghost" data-act="wk-next">Tuần sau ›</button>
+    <button class="ghost" data-act="wk-today">Tuần này</button>
+    <button class="primary" data-act="ev-add" data-date="${iso(new Date())}">+ Thêm buổi học</button>
+  </div><div class="week">`;
+
+  days.forEach(d => {
+    const key = iso(d);
+    const evs = S.events.filter(e => e.date === key).sort((a, b) => a.start.localeCompare(b.start));
+    h += `<section class="day ${key === today ? 'today' : ''}">
+      <div class="day-h"><span>${dayLabel(d)}</span><button title="Thêm buổi học" data-act="ev-add" data-date="${key}">+</button></div>
+      <div class="day-b">${evs.length ? evs.map(e => `
+        <button class="ev" data-act="ev-edit" data-id="${e.id}">
+          <b>📖 ${esc(e.course)} - ${esc(e.className)}</b>
+          <span class="t">🕒 ${fmtTime(e.start)}-${fmtTime(e.end)}</span> <span class="m" style="display:inline">· ${esc(e.mode)}</span>
+          <span class="m">📍 ${esc(e.room || '-')}</span>
+          <span class="m">👤 ${esc(e.teacher || '-')}</span>
+        </button>`).join('') : '<div class="empty">-</div>'}</div>
+    </section>`;
+  });
+  $('#view').innerHTML = h + '</div>';
+}
+
+function evForm(e, defDate) {
+  const isNew = !e;
+  e = e || { course: '', className: '', date: defDate, start: '07:00', end: '08:30', room: '', teacher: '', mode: 'Offline' };
+  const html = `
+    <div class="two"><div><label>Mã môn</label><input name="course" required value="${esc(e.course)}"></div>
+    <div><label>Tên lớp</label><input name="className" required value="${esc(e.className)}"></div></div>
+    <label>Ngày</label><input type="date" name="date" required value="${esc(e.date)}">
+    <div class="two"><div><label>Bắt đầu</label><input type="time" name="start" required value="${esc(e.start)}"></div>
+    <div><label>Kết thúc</label><input type="time" name="end" required value="${esc(e.end)}"></div></div>
+    <div class="two"><div><label>Phòng</label><input name="room" value="${esc(e.room)}"></div>
+    <div><label>Giảng viên</label><input name="teacher" value="${esc(e.teacher)}"></div></div>
+    <label>Hình thức</label><select name="mode"><option ${e.mode === 'Offline' ? 'selected' : ''}>Offline</option><option ${e.mode === 'Online' ? 'selected' : ''}>Online</option></select>
+    ${isNew ? `<label>Lặp lại hằng tuần đến ngày (để trống nếu chỉ 1 buổi)</label><input type="date" name="until">` : ''}`;
+  openForm({
+    title: isNew ? 'Thêm buổi học' : 'Sửa buổi học', html,
+    onSave: f => {
+      if (f.end <= f.start) { toast('Giờ kết thúc phải sau giờ bắt đầu.'); return false; }
+      const base = { course: f.course.trim(), className: f.className.trim(), start: f.start, end: f.end, room: f.room.trim(), teacher: f.teacher.trim(), mode: f.mode };
+      if (isNew) {
+        let d = parseD(f.date); const last = f.until ? parseD(f.until) : d;
+        do { S.events.push({ id: uid(), date: iso(d), ...base }); d = addDays(d, 7); } while (d <= last);
+      } else Object.assign(e, base, { date: f.date });
+      save(); render();
+    },
+    onDelete: isNew ? null : () => { if (confirm('Xóa buổi học này?')) { S.events = S.events.filter(x => x.id !== e.id); save(); render(); return true; } return false; }
+  });
+}
+
+/* ---- Chuyên cần ---- */
+function donut(c) {
+  const r = 38, len = 2 * Math.PI * r;
+  const t = Math.max(c.total, c.attended + c.absent, 1);
+  const a = c.attended / t * len, b = c.absent / t * len;
+  const held = c.attended + c.absent;
+  const p = held > 0 ? pct(c.attended, held) : null;
+  const txt = p === null ? '—' : (Number.isInteger(p) ? p : p.toFixed(2));
+  return `<svg viewBox="0 0 100 100" width="104" height="104" role="img" aria-label="Biểu đồ chuyên cần">
+    <circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--track)" stroke-width="13"/>
+    <circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--green)" stroke-width="13" stroke-dasharray="${a} ${len - a}" transform="rotate(-90 50 50)"/>
+    <circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--red)" stroke-width="13" stroke-dasharray="${b} ${len - b}" stroke-dashoffset="${-a}" transform="rotate(-90 50 50)"/>
+    <text x="50" y="56" text-anchor="middle" font-size="17" font-weight="700" fill="currentColor">${txt}</text></svg>`;
+}
+
+function rAttendance() {
+  const lim = S.settings.maxAbsent;
+  let h = `<div class="bar"><div class="bar-title" style="text-align:left">Giới hạn nghỉ: không quá ${lim}% tổng số buổi</div>
+    <button class="primary" data-act="co-add">+ Thêm môn</button></div><div class="grid">`;
+  S.courses.forEach(c => {
+    const allowed = maxAbs(c), left = allowed - c.absent, ap = pct(c.absent, c.total);
+    let st = '';
+    if (!c.total) st = `<div class="status warn">Chưa nhập tổng số buổi. Bấm “Sửa” để nhập.</div>`;
+    else if (c.absent > allowed) st = `<div class="status bad">Vượt giới hạn: nghỉ ${c.absent}/${c.total} (${ap.toFixed(2)}%), tối đa ${allowed} buổi. Có nguy cơ bị cấm thi.</div>`;
+    else if (left === 0) st = `<div class="status warn">Đã nghỉ đủ ${allowed} buổi cho phép. Không được nghỉ thêm.</div>`;
+    else st = `<div class="status ${left === 1 ? 'warn' : ''}">Nghỉ ${c.absent}/${c.total} (${ap.toFixed(2)}%). Còn được nghỉ thêm ${left} buổi (tối đa ${allowed}).</div>`;
+    const remain = Math.max(c.total - c.attended - c.absent, 0);
+    h += `<article class="card"><div class="course">${donut(c)}<div class="info">
+      <h3>${esc(c.code)}${c.name ? ' - ' + esc(c.name) : ''}</h3>
+      <div class="meta">Lớp: ${esc(c.className)}<br>${fmtDate(c.start)} → ${fmtDate(c.end)}</div>
+      <span class="pill g">Đã học: ${c.attended}/${c.total || '?'}</span><span class="pill r">Đã nghỉ: ${c.absent}</span>${c.total ? `<span class="pill m">Còn lại: ${remain}</span>` : ''}
+    </div></div>
+    <div class="legend"><i style="background:var(--green)"></i>Đã học<i style="background:var(--red)"></i>Đã nghỉ<i style="background:var(--track)"></i>Còn lại</div>
+    ${st}
+    <div class="acts"><button class="ghost" data-act="co-att" data-id="${c.id}">+1 đã học</button><button class="ghost" data-act="co-abs" data-id="${c.id}">+1 đã nghỉ</button>
+    <button class="ghost" data-act="co-edit" data-id="${c.id}">Sửa</button></div></article>`;
+  });
+  $('#view').innerHTML = h + '</div>' + `<p class="note">Vòng tròn: xanh là buổi đã học, đỏ là buổi đã nghỉ, xám là buổi còn lại. Số ở giữa là tỉ lệ đi học trên số buổi đã diễn ra.</p>`;
+}
+
+function coForm(c) {
+  const isNew = !c;
+  c = c || { code: '', name: '', className: '', start: '', end: '', total: '', attended: 0, absent: 0 };
+  const html = `
+    <div class="two"><div><label>Mã môn</label><input name="code" required value="${esc(c.code)}"></div>
+    <div><label>Tên môn</label><input name="name" value="${esc(c.name)}"></div></div>
+    <label>Tên lớp</label><input name="className" value="${esc(c.className)}">
+    <div class="two"><div><label>Ngày bắt đầu</label><input type="date" name="start" value="${esc(c.start)}"></div>
+    <div><label>Ngày kết thúc</label><input type="date" name="end" value="${esc(c.end)}"></div></div>
+    <label>Tổng số buổi của môn</label><input type="number" min="0" name="total" required value="${esc(c.total)}">
+    <div class="two"><div><label>Số buổi đã học</label><input type="number" min="0" name="attended" required value="${esc(c.attended)}"></div>
+    <div><label>Số buổi đã nghỉ</label><input type="number" min="0" name="absent" required value="${esc(c.absent)}"></div></div>`;
+  openForm({
+    title: isNew ? 'Thêm môn' : 'Sửa môn', html,
+    onSave: f => {
+      const total = Math.floor(num(f.total)), att = Math.floor(num(f.attended)), ab = Math.floor(num(f.absent));
+      if (att + ab > total) { toast('Đã học + đã nghỉ không được lớn hơn tổng số buổi.'); return false; }
+      const d = { code: f.code.trim(), name: f.name.trim(), className: f.className.trim(), start: f.start, end: f.end, total, attended: att, absent: ab };
+      if (isNew) S.courses.push({ id: uid(), ...d }); else Object.assign(c, d);
+      save(); render();
+    },
+    onDelete: isNew ? null : () => { if (confirm('Xóa môn này?')) { S.courses = S.courses.filter(x => x.id !== c.id); save(); render(); return true; } return false; }
+  });
+}
+
+/* ---- Mượn sách ---- */
+function rBooks() {
+  const list = [...S.books].sort((a, b) => (a.returned - b.returned) || (dueDate(a) - dueDate(b)));
+  let h = `<div class="bar"><div class="bar-title" style="text-align:left">Thời hạn mượn tối đa ${S.settings.loanDays} ngày kể từ ngày mượn</div>
+    <button class="primary" data-act="bk-add">+ Thêm sách</button></div>`;
+  if (!list.length) h += `<div class="card empty">Chưa có sách nào. Bấm “Thêm sách” khi bạn mượn sách mới.</div>`;
+  h += '<div class="grid">';
+  list.forEach(b => {
+    const left = daysLeft(b);
+    let pill;
+    if (b.returned) pill = `<span class="pill m">Đã trả</span>`;
+    else if (left < 0) pill = `<span class="pill r">Quá hạn ${-left} ngày</span>`;
+    else if (left === 0) pill = `<span class="pill r">Hết hạn hôm nay</span>`;
+    else if (left <= S.settings.remindBookDays) pill = `<span class="pill o">Còn ${left} ngày</span>`;
+    else pill = `<span class="pill g">Còn ${left} ngày</span>`;
+    h += `<article class="card" ${b.returned ? 'style="opacity:.65"' : ''}>
+      <div class="row"><h3 style="margin:0">📚 ${esc(b.title)}</h3>${pill}</div>
+      <div class="meta note">Mượn: ${fmtDate(b.borrowDate)} · Hạn trả: <b>${fmtDate(iso(dueDate(b)))}</b> (${b.days} ngày)</div>
+      ${b.note ? `<div class="note">${esc(b.note)}</div>` : ''}
+      <div class="acts"><button class="ghost" data-act="bk-ret" data-id="${b.id}">${b.returned ? 'Đánh dấu chưa trả' : 'Đã trả'}</button>
+      <button class="ghost" data-act="bk-edit" data-id="${b.id}">Sửa</button></div></article>`;
+  });
+  $('#view').innerHTML = h + '</div>';
+}
+
+function bkForm(b) {
+  const isNew = !b;
+  b = b || { title: '', borrowDate: iso(new Date()), days: S.settings.loanDays, note: '' };
+  const html = `
+    <label>Tên sách</label><input name="title" required value="${esc(b.title)}">
+    <div class="two"><div><label>Ngày mượn</label><input type="date" name="borrowDate" required value="${esc(b.borrowDate)}"></div>
+    <div><label>Số ngày được mượn (tối đa 30)</label><input type="number" name="days" min="1" max="30" required value="${esc(b.days)}"></div></div>
+    <label>Ghi chú</label><input name="note" value="${esc(b.note)}">`;
+  openForm({
+    title: isNew ? 'Thêm sách mượn' : 'Sửa sách mượn', html,
+    onSave: f => {
+      const d = { title: f.title.trim(), borrowDate: f.borrowDate, days: Math.min(30, Math.max(1, Math.floor(num(f.days)))), note: f.note.trim() };
+      if (isNew) S.books.push({ id: uid(), returned: false, ...d }); else Object.assign(b, d);
+      save(); render();
+    },
+    onDelete: isNew ? null : () => { if (confirm('Xóa sách này?')) { S.books = S.books.filter(x => x.id !== b.id); save(); render(); return true; } return false; }
+  });
+}
+
+/* ---- Email ---- */
+const HOT = /(lịch|phòng|đổi|hủy|nghỉ|thi|điểm|thông báo|schedule|room|exam|cancel)/i;
+function rMail() {
+  const { scriptUrl } = S.settings;
+  let h = `<div class="bar"><div class="bar-title" style="text-align:left">Thông báo từ Phòng Đào tạo FPTU Đà Nẵng${S.mailAt ? ' · cập nhật ' + esc(new Date(S.mailAt).toLocaleTimeString('vi-VN')) : ''}</div>
+    <button class="primary" data-act="mail-load">Tải lại</button></div>`;
+  if (!scriptUrl) h += `<div class="card">Bạn chưa kết nối Gmail. Vào tab <b>Cài đặt</b>, dán địa chỉ Web App của Apps Script (xem hướng dẫn kèm theo). Khi có email về lịch học, hãy sửa lịch ở tab “Lịch học”.</div>`;
+  else if (!S.mailCache.length) h += `<div class="card empty">Chưa có thông báo nào. Bấm “Tải lại”.</div>`;
+  h += S.mailCache.map(m => `<details class="card mail ${HOT.test(m.subject + ' ' + m.snippet) ? 'hot' : ''}" style="margin-bottom:8px">
+    <summary style="cursor:pointer"><b style="display:inline">${m.unread ? '● ' : ''}${esc(m.subject || '(không tiêu đề)')}</b>
+    <span class="m" style="display:block">${esc(new Date(m.date).toLocaleString('vi-VN'))}</span>
+    <span class="note">${esc(m.snippet)}</span></summary>
+    <p style="white-space:pre-wrap;margin:10px 0 6px">${esc(m.body || m.snippet)}</p>
+    <a href="${esc(m.link)}" target="_blank" rel="noopener">Mở trong Gmail ↗</a></details>`).join('');
+  $('#view').innerHTML = h;
+}
+
+async function loadMail(silent) {
+  const { scriptUrl, token } = S.settings;
+  if (!scriptUrl) { if (!silent) toast('Chưa nhập địa chỉ Apps Script.'); return; }
+  try {
+    const url = scriptUrl + (scriptUrl.includes('?') ? '&' : '?') + 'action=list&token=' + encodeURIComponent(token || '');
+    const r = await fetch(url); const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'Lỗi không rõ');
+    S.mailCache = j.items; S.mailAt = Date.now(); save(); if (tab === 'mail') rMail();
+    if (!silent) toast('Đã cập nhật ' + j.items.length + ' email.');
+  } catch (e) { if (!silent) toast('Không tải được email: ' + e.message); }
+}
+
+/* ---- Cài đặt ---- */
+function rSettings() {
+  const s = S.settings;
+  $('#view').innerHTML = `
+  <form class="card" id="setForm">
+    <h3 style="margin-top:0">Thông báo điện thoại (ntfy.sh)</h3>
+    <label>Topic ntfy (đặt tên khó đoán)</label><input name="topic" value="${esc(s.topic)}" placeholder="vd: so-hoc-tap-8x3k92">
+    <div class="acts"><button type="button" class="ghost" data-act="ntfy-test">Gửi thử</button></div>
+    <h3>Gmail (Apps Script)</h3>
+    <label>Địa chỉ Web App</label><input name="scriptUrl" value="${esc(s.scriptUrl)}" placeholder="https://script.google.com/macros/s/.../exec">
+    <label>Mã bí mật (trùng với TOKEN trong Code.gs)</label><input name="token" value="${esc(s.token)}">
+    <h3>Quy định</h3>
+    <div class="two"><div><label>Nghỉ tối đa (% tổng số buổi)</label><input type="number" name="maxAbsent" min="1" max="100" value="${esc(s.maxAbsent)}"></div>
+    <div><label>Nhắc trả sách trước (ngày)</label><input type="number" name="remindBookDays" min="0" max="29" value="${esc(s.remindBookDays)}"></div></div>
+    <label>Số ngày mượn sách mặc định</label><input type="number" name="loanDays" min="1" max="30" value="${esc(s.loanDays)}">
+    <div class="actions"><span class="sp"></span><button class="primary" type="submit">Lưu cài đặt</button></div>
+  </form>
+  <h2 class="sec">Sao lưu dữ liệu</h2>
+  <div class="card">
+    <p class="note" style="margin-top:0">Dữ liệu được lưu trong trình duyệt của thiết bị này. Hãy xuất file để sao lưu hoặc chuyển sang máy khác.</p>
+    <div class="acts"><button class="ghost" data-act="export">Xuất file JSON</button>
+    <button class="ghost" data-act="import">Nhập file JSON</button>
+    <button class="danger" data-act="reset">Đặt lại về dữ liệu ban đầu</button></div>
+    <input type="file" id="file" accept="application/json" hidden>
+  </div>`;
+  $('#setForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.target));
+    Object.assign(S.settings, {
+      topic: f.topic.trim().replace(/[^A-Za-z0-9_-]/g, ''), scriptUrl: f.scriptUrl.trim(), token: f.token.trim(),
+      maxAbsent: Math.min(100, Math.max(1, num(f.maxAbsent) || 20)),
+      remindBookDays: Math.max(0, Math.floor(num(f.remindBookDays))),
+      loanDays: Math.min(30, Math.max(1, Math.floor(num(f.loanDays)) || 30))
+    });
+    save(); toast('Đã lưu cài đặt.'); rSettings(); checkReminders();
+  });
+  $('#file').addEventListener('change', async e => {
+    const file = e.target.files[0]; if (!file) return;
+    try {
+      const d = JSON.parse(await file.text());
+      if (!Array.isArray(d.events) || !Array.isArray(d.courses) || !Array.isArray(d.books)) throw new Error('File không đúng định dạng');
+      S = d; save(); load(); save(); toast('Đã nhập dữ liệu.'); render();
+    } catch (err) { toast('Nhập thất bại: ' + err.message); }
+  });
+}
+
+/* ============ Hộp thoại dùng chung ============ */
+function openForm({ title, html, onSave, onDelete }) {
+  const dlg = $('#dlg'), form = $('#dlgForm');
+  $('#dlgTitle').textContent = title; $('#dlgBody').innerHTML = html;
+  const del = $('#dlgDel'); del.hidden = !onDelete;
+  form.onsubmit = e => { e.preventDefault(); if (onSave(Object.fromEntries(new FormData(form))) !== false) dlg.close(); };
+  del.onclick = () => { if (onDelete && onDelete()) dlg.close(); };
+  $('#dlgCancel').onclick = () => dlg.close();
+  dlg.showModal();
+}
+
+/* ============ Nhắc nhở ============ */
+let reminding = false;
+async function checkReminders() {
+  if (!S.settings.topic || reminding) return;
+  reminding = true;
+  try {
+    const now = new Date(), today = iso(now);
+    for (const k in S.notified) if (S.notified[k] < today) delete S.notified[k];
+    const once = async (key, title, msg, pr) => {
+      if (S.notified[key]) return;
+      if (await ntfy(title, msg, pr)) { S.notified[key] = today; save(); }
+    };
+    const todays = S.events.filter(e => e.date === today).sort((a, b) => a.start.localeCompare(b.start));
+    if (todays.length) {
+      await once('day-' + today, `Hôm nay có ${todays.length} buổi học`,
+        todays.map(e => `${fmtTime(e.start)}-${fmtTime(e.end)} ${e.course} (${e.room || '-'})`).join('\n'), 3);
+    }
+    for (const e of todays) {
+      const at = new Date(parseD(e.date).getTime() + (+e.start.slice(0, 2) * 60 + +e.start.slice(3)) * 60000);
+      const diff = (at - now) / 60000;
+      if (diff > 0 && diff <= 90) await once(`ev-${e.id}-${today}`, `Sắp học ${e.course}`, `${fmtTime(e.start)} tại ${e.room || '-'} (còn ${Math.round(diff)} phút)`, 4);
+    }
+    for (const b of S.books) {
+      if (b.returned) continue;
+      const left = daysLeft(b);
+      if (left <= S.settings.remindBookDays) {
+        await once(`bk-${b.id}-${today}`, left < 0 ? 'Sách quá hạn!' : 'Sắp đến hạn trả sách',
+          `${b.title}: ${left < 0 ? 'quá hạn ' + (-left) + ' ngày' : left === 0 ? 'hết hạn hôm nay' : 'còn ' + left + ' ngày'}`, left <= 0 ? 5 : 4);
+      }
+    }
+    for (const c of S.courses) {
+      if (!c.total) continue;
+      const left = maxAbs(c) - c.absent;
+      if (left <= 1) await once(`ab-${c.id}-${today}`, `Cảnh báo nghỉ học: ${c.code}`,
+        left < 0 ? 'Đã vượt giới hạn nghỉ!' : left === 0 ? 'Đã hết số buổi được nghỉ.' : 'Chỉ còn được nghỉ thêm 1 buổi.', left <= 0 ? 5 : 4);
+    }
+  } finally { reminding = false; }
+}
+
+/* ============ Sự kiện ============ */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act],[data-tab]'); if (!b) return;
+  if (b.dataset.tab) { tab = b.dataset.tab; render(); if (tab === 'mail') loadMail(true); return; }
+  const id = b.dataset.id, act = b.dataset.act;
+  const course = () => S.courses.find(c => c.id === id);
+  switch (act) {
+    case 'wk-prev': weekStart = addDays(weekStart, -7); render(); break;
+    case 'wk-next': weekStart = addDays(weekStart, 7); render(); break;
+    case 'wk-today': weekStart = mondayOf(new Date()); render(); break;
+    case 'ev-add': evForm(null, b.dataset.date); break;
+    case 'ev-edit': evForm(S.events.find(x => x.id === id)); break;
+    case 'co-add': coForm(null); break;
+    case 'co-edit': coForm(course()); break;
+    case 'co-att': { const c = course(); if (c.total && c.attended + c.absent >= c.total) return toast('Đã đủ tổng số buổi.'); c.attended++; save(); render(); break; }
+    case 'co-abs': { const c = course(); if (c.total && c.attended + c.absent >= c.total) return toast('Đã đủ tổng số buổi.'); c.absent++; save(); render(); checkReminders(); break; }
+    case 'bk-add': bkForm(null); break;
+    case 'bk-edit': bkForm(S.books.find(x => x.id === id)); break;
+    case 'bk-ret': { const bk = S.books.find(x => x.id === id); bk.returned = !bk.returned; save(); render(); break; }
+    case 'mail-load': loadMail(false); break;
+    case 'ntfy-test': {
+      const t = $('#setForm [name=topic]').value.trim().replace(/[^A-Za-z0-9_-]/g, '');
+      if (!t) return toast('Hãy nhập topic trước.');
+      S.settings.topic = t; save();
+      ntfy('Sổ học tập', 'Thông báo thử thành công!').then(ok => toast(ok ? 'Đã gửi. Kiểm tra điện thoại của bạn.' : 'Gửi thất bại, kiểm tra mạng.'));
+      break;
+    }
+    case 'export': {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' }));
+      a.download = 'so-hoc-tap-' + iso(new Date()) + '.json'; a.click(); URL.revokeObjectURL(a.href); break;
+    }
+    case 'import': $('#file').click(); break;
+    case 'reset': if (confirm('Xóa toàn bộ dữ liệu bạn đã nhập và quay về dữ liệu ban đầu?')) { S = seed(); save(); toast('Đã đặt lại.'); render(); } break;
+  }
+});
+$('#dlg').addEventListener('click', e => { if (e.target === $('#dlg')) $('#dlg').close(); });
+
+/* ============ Khởi động ============ */
+load(); save(); render();
+checkReminders();
+loadMail(true);
+setInterval(() => { checkReminders(); if (tab === 'mail') loadMail(true); }, 5 * 60 * 1000);
+</script>
+</body>
+</html>
